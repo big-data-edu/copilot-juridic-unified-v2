@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Copilot Juridic · DSU — Legea 544/2001 · Pilot</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,600;0,700&family=JetBrains+Mono:wght@400;500&family=Fraunces:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-deep: #0c0e13;
+  --bg-panel: #141821;
+  --bg-card: #1a1f2b;
+  --bg-input: #0f1219;
+  --border: #2a3040;
+  --accent: #d4943a;
+  --accent-soft: #d4943a22;
+  --accent-glow: #d4943a44;
+  --green: #3ecf8e;
+  --green-soft: #3ecf8e18;
+  --red: #ef4444;
+  --red-soft: #ef444418;
+  --blue: #60a5fa;
+  --blue-soft: #60a5fa18;
+  --orange: #f59e0b;
+  --orange-soft: #f59e0b18;
+  --purple: #a78bfa;
+  --purple-soft: #a78bfa18;
+  --text: #e8e4df;
+  --text-dim: #8b8d93;
+  --text-muted: #555a66;
+  --white: #f5f2ed;
+  --font-body: 'DM Sans', sans-serif;
+  --font-display: 'Fraunces', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { font-size: 15px; }
+body { font-family: var(--font-body); background: var(--bg-deep); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+.header { background: var(--bg-panel); border-bottom: 1px solid var(--border); padding: 16px 32px; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; backdrop-filter: blur(12px); }
+.header-logo { width: 40px; height: 40px; background: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+.header-text h1 { font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--white); letter-spacing: -0.02em; }
+.header-text span { font-size: 0.73rem; color: var(--text-dim); letter-spacing: 0.08em; text-transform: uppercase; font-weight: 500; }
+.header-status { margin-left: auto; display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--green); }
+.header-status::before { content: ''; width: 7px; height: 7px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green); }
+
+.workspace { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); min-height: calc(100vh - 73px); }
+.panel { background: var(--bg-deep); display: flex; flex-direction: column; }
+.panel-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; background: var(--bg-panel); }
+.panel-header h2 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); font-weight: 600; }
+.step-badge { width: 24px; height: 24px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700; flex-shrink: 0; }
+.step-badge.s1 { background: var(--blue-soft); color: var(--blue); }
+.step-badge.s2 { background: var(--accent-soft); color: var(--accent); }
+.panel-body { flex: 1; padding: 20px 24px; overflow-y: auto; }
+
+.section-block { margin-bottom: 24px; }
+.section-block label { display: block; font-size: 0.73rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 600; margin-bottom: 8px; }
+textarea, input[type="text"], select { width: 100%; background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; color: var(--text); font-family: var(--font-body); font-size: 0.93rem; transition: border-color 0.2s, box-shadow 0.2s; resize: vertical; }
+textarea:focus, input[type="text"]:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+textarea { min-height: 140px; }
+
+.scenario-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.scenario-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; cursor: pointer; transition: all 0.2s; text-align: left; position: relative; }
+.scenario-card:hover { border-color: var(--accent); background: var(--accent-soft); }
+.scenario-card.active { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 2px var(--accent-glow); }
+.scenario-card h4 { font-size: 0.82rem; font-weight: 600; color: var(--white); margin-bottom: 4px; }
+.scenario-card p { font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; }
+.scenario-type { position: absolute; top: 8px; right: 8px; font-size: 0.6rem; padding: 2px 6px; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.scenario-type.competenta { background: var(--green-soft); color: var(--green); }
+.scenario-type.controversat { background: var(--orange-soft); color: var(--orange); }
+.scenario-type.redirect { background: var(--purple-soft); color: var(--purple); }
+
+.search-panel { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 24px; }
+.search-panel h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+.search-panel h3::before { content: '⚖'; font-size: 1rem; }
+.search-source-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); border: 1px solid var(--accent-glow); border-radius: 6px; padding: 5px 10px; font-size: 0.72rem; color: var(--accent); font-weight: 600; margin-bottom: 12px; }
+.search-row { display: flex; gap: 8px; margin-bottom: 10px; }
+.search-row input, .search-row select { flex: 1; padding: 10px 12px; font-size: 0.85rem; }
+.search-row select { max-width: 160px; }
+.search-nl { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); }
+.search-nl label { font-size: 0.72rem; color: var(--text-dim); margin-bottom: 6px; display: block; }
+.search-nl .nl-hint { font-size: 0.68rem; color: var(--text-muted); margin-bottom: 8px; font-style: italic; }
+.search-nl-input { display: flex; gap: 8px; }
+.search-nl-input input { flex: 1; padding: 10px 12px; font-size: 0.85rem; }
+
+.search-results { margin-top: 12px; max-height: 240px; overflow-y: auto; }
+.search-result-item { padding: 10px 12px; background: var(--bg-input); border: 1px solid var(--border); border-radius: 6px; margin-bottom: 6px; cursor: pointer; transition: all 0.2s; }
+.search-result-item:hover { border-color: var(--accent); background: var(--accent-soft); }
+.search-result-item.selected { border-color: var(--green); background: var(--green-soft); }
+.search-result-item h5 { font-size: 0.82rem; color: var(--white); font-weight: 600; margin-bottom: 3px; }
+.search-result-item p { font-size: 0.72rem; color: var(--text-dim); line-height: 1.4; }
+.search-result-tag { display: inline-block; font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: var(--blue-soft); color: var(--blue); font-weight: 600; margin-top: 4px; }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 10px 18px; border: none; border-radius: 8px; font-family: var(--font-body); font-size: 0.85rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-primary { background: var(--accent); color: #000; }
+.btn-primary:hover { background: #e0a44a; box-shadow: 0 4px 16px var(--accent-glow); }
+.btn-secondary { background: var(--bg-card); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--accent); }
+.btn-sm { padding: 7px 12px; font-size: 0.78rem; }
+.btn-block { width: 100%; justify-content: center; }
+
+.analysis-section { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.analysis-section h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 600; margin-bottom: 10px; }
+.analysis-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.a-tag { padding: 5px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
+.a-tag.approve { background: var(--green-soft); color: var(--green); }
+.a-tag.deny { background: var(--red-soft); color: var(--red); }
+.a-tag.partial { background: var(--accent-soft); color: var(--accent); }
+.a-tag.info { background: var(--blue-soft); color: var(--blue); }
+.a-tag.redirect { background: var(--purple-soft); color: var(--purple); }
+.a-tag.warn { background: var(--orange-soft); color: var(--orange); }
+
+.draft-editor { background: var(--bg-input); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.draft-toolbar { padding: 10px 14px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; background: var(--bg-card); }
+.draft-toolbar span { font-size: 0.73rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); font-weight: 600; }
+.draft-textarea { width: 100%; min-height: 300px; background: transparent; border: none; padding: 16px; color: var(--text); font-family: var(--font-body); font-size: 0.93rem; line-height: 1.7; resize: vertical; }
+.draft-textarea:focus { outline: none; }
+
+.info-bar { padding: 12px 16px; border-radius: 8px; font-size: 0.78rem; display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+.info-bar.classified { background: var(--red-soft); border: 1px solid #ef444444; color: #f87171; }
+.info-bar.success { background: var(--green-soft); border: 1px solid #3ecf8e44; color: var(--green); }
+.info-bar.warning { background: var(--orange-soft); border: 1px solid #f59e0b44; color: var(--orange); }
+.info-bar.redirect-bar { background: var(--purple-soft); border: 1px solid #a78bfa44; color: var(--purple); }
+
+.meta-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 16px; }
+.meta-item { background: var(--bg-card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+.meta-item label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: block; margin-bottom: 4px; font-weight: 600; }
+.meta-item span { font-size: 0.88rem; color: var(--white); font-weight: 600; }
+.meta-item span.check { color: var(--green); }
+.meta-item span.check::after { content: ' ✓'; }
+
+.spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-dots::after { content: ''; animation: dots 1.4s steps(4, end) infinite; }
+@keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
+.hidden { display: none !important; }
+.portal-link { display: inline-flex; align-items: center; gap: 6px; color: var(--accent); font-size: 0.78rem; font-weight: 500; text-decoration: none; margin-top: 8px; transition: color 0.2s; }
+.portal-link:hover { color: #e0a44a; text-decoration: underline; }
+.portal-link::after { content: '↗'; font-size: 0.9em; }
+
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+@media (max-width: 900px) { .workspace { grid-template-columns: 1fr; } .scenario-cards { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">⚖</div>
+  <div class="header-text">
+    <h1>Copilot Juridic · DSU</h1>
+    <span>Legea 544/2001 · Pilot — Interfață Unificată</span>
+  </div>
+  <div class="header-status">Sistem activ</div>
+</header>
+
+<div class="workspace">
+  <!-- LEFT PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="step-badge s1">1</span>
+      <h2>Solicitare &amp; Căutare Legislație</h2>
+    </div>
+    <div class="panel-body">
+      <div class="section-block">
+        <label>Scenarii de testare</label>
+        <div class="scenario-cards">
+          <div class="scenario-card" onclick="selectScenario(this, 'smurd')">
+            <span class="scenario-type competenta">Competență DSU</span>
+            <h4>Timpi intervenție SMURD</h4>
+            <p>Statistici privind timpii medii de răspuns ai echipajelor SMURD pe județe</p>
+          </div>
+          <div class="scenario-card" onclick="selectScenario(this, 'cutremur')">
+            <span class="scenario-type competenta">Competență DSU</span>
+            <h4>Planuri evacuare cutremur</h4>
+            <p>Planurile de evacuare și protecție civilă pentru București în caz de cutremur</p>
+          </div>
+          <div class="scenario-card" onclick="selectScenario(this, 'ucraina')">
+            <span class="scenario-type controversat">Controversat</span>
+            <h4>Cheltuieli criza Ucraina</h4>
+            <p>Fonduri cheltuite de DSU pentru refugiați, contracte ONG-uri, resurse dislocate</p>
+          </div>
+          <div class="scenario-card" onclick="selectScenario(this, 'detentie')">
+            <span class="scenario-type redirect">Redirecționare</span>
+            <h4>Condiții centre detenție</h4>
+            <p>Informații despre condițiile din centrele de reținere ale Poliției — nu e competența DSU</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-block">
+        <label>Textul solicitării</label>
+        <textarea id="requestText" placeholder="Introduceți sau lipiți textul solicitării de informații publice conform Legea 544/2001..."></textarea>
+      </div>
+
+      <div class="search-panel">
+        <h3>Căutare legislație — legislatie.just.ro</h3>
+        <div class="search-source-badge">🔗 Portalul Legislativ al Ministerului Justiției — actualizat în timp real</div>
+        <div class="search-row">
+          <input type="text" id="searchTitle" placeholder="Cuvânt cheie în titlu" />
+          <input type="text" id="searchNumber" placeholder="Nr." style="max-width:80px;" />
+          <input type="text" id="searchYear" placeholder="An" style="max-width:80px;" />
+        </div>
+        <div class="search-row">
+          <select id="searchType">
+            <option value="">Tip act normativ</option>
+            <option value="lege">Lege</option>
+            <option value="og">Ordonanță de Guvern</option>
+            <option value="oug">Ordonanță de Urgență</option>
+            <option value="hg">Hotărâre de Guvern</option>
+            <option value="ordin">Ordin</option>
+          </select>
+          <button class="btn btn-primary btn-sm" onclick="searchLegislation()">Caută în Portal</button>
+        </div>
+        <div class="search-nl">
+          <label>Căutare avansată — limbaj natural</label>
+          <p class="nl-hint">Descrieți ce căutați cu propriile cuvinte. Sistemul identifică actele normative relevante.</p>
+          <div class="search-nl-input">
+            <input type="text" id="nlSearch" placeholder="Ex: legislație privind protecția civilă, ajutor umanitar refugiați, managementul situațiilor de urgență..." />
+            <button class="btn btn-secondary btn-sm" onclick="nlSearchLegislation()">Caută AI</button>
+          </div>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+        <a href="https://legislatie.just.ro/" target="_blank" class="portal-link">Deschide Portalul Legislativ legislatie.just.ro</a>
+      </div>
+
+      <button class="btn btn-primary btn-block" onclick="runAnalysis()">Analizează solicitarea</button>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="step-badge s2">2</span>
+      <h2>Analiză &amp; Draft Răspuns</h2>
+    </div>
+    <div class="panel-body">
+      <div id="analysisLoading" class="hidden" style="text-align:center; padding:40px;">
+        <div class="spinner"></div>
+        <p style="margin-top:12px; color:var(--text-dim); font-size:0.85rem;">Se analizează solicitarea<span class="loading-dots"></span></p>
+        <p style="color:var(--text-muted); font-size:0.75rem; margin-top:6px;">Anonimizare Presidio · Clasificare juridică · Identificare temei legal</p>
+      </div>
+
+      <div id="analysisResults" class="hidden">
+        <div class="analysis-section">
+          <h3>Clasificare solicitare</h3>
+          <div class="analysis-tags" id="classificationTags"></div>
+        </div>
+        <div class="analysis-section">
+          <h3>Legislație aplicabilă identificată automat</h3>
+          <div id="legalBasis" style="font-size:0.85rem; color:var(--text); line-height:1.7;"></div>
+        </div>
+        <div id="alertBar" class="info-bar classified hidden">
+          <span class="icon" id="alertIcon">🚫</span>
+          <span id="alertText"></span>
+        </div>
+        <div class="draft-editor">
+          <div class="draft-toolbar">
+            <span>Draft editabil</span>
+            <div style="margin-left:auto; display:flex; gap:6px;">
+              <button class="btn btn-secondary btn-sm" onclick="copyDraft()">Copiază draft</button>
+              <button class="btn btn-secondary btn-sm" onclick="regenerateDraft()">Regenerează</button>
+            </div>
+          </div>
+          <textarea class="draft-textarea" id="draftText"></textarea>
+        </div>
+        <div class="meta-row">
+          <div class="meta-item"><label>Date API</label><span class="check">Anonimizate</span></div>
+          <div class="meta-item"><label>Timp procesare</label><span id="processingTime">~40min → 5min</span></div>
+          <div class="meta-item"><label>Decizie finală</label><span class="check">Jurist</span></div>
+        </div>
+      </div>
+
+      <div id="emptyState" style="text-align:center; padding:60px 20px;">
+        <div style="font-size:3rem; margin-bottom:16px; opacity:0.3;">⚖</div>
+        <p style="color:var(--text-dim); font-size:0.9rem;">Selectați un scenariu sau completați solicitarea</p>
+        <p style="color:var(--text-muted); font-size:0.78rem; margin-top:8px;">Rezultatele analizei și draft-ul răspunsului vor apărea aici.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCENARIOS = {
+  smurd: {
+    text: `Subsemnatul Ion Marinescu, în calitate de jurnalist la publicația „Monitorul de Urgențe", formulez prezenta solicitare în temeiul Legii nr. 544/2001.\n\nVă rog să îmi comunicați:\n1. Timpii medii de răspuns ai echipajelor SMURD și ai serviciilor de ambulanță, defalcați pe fiecare județ, pentru anul 2025;\n2. Numărul total de intervenții realizate de SMURD în anul 2025, pe categorii (accident rutier, urgență medicală, incendiu);\n3. Numărul de echipaje SMURD operaționale la nivel național, comparativ cu necesarul stabilit prin normativele în vigoare.\n\nSolicit comunicarea informațiilor în format electronic (PDF sau Excel).`,
+    tags: [
+      { text: 'Informație publică', cls: 'approve' },
+      { text: 'Competență DSU', cls: 'approve' },
+      { text: 'Statistici operaționale', cls: 'info' },
+    ],
+    legal: [
+      '• <strong>Art. 5, alin. (1) din Legea 544/2001</strong> — informațiile privind activitățile instituției sunt comunicabile din oficiu.',
+      '• <strong>O.U.G. nr. 1/2014</strong> (modifică OG 21/2004) — DSU coordonează operațional serviciile de ambulanță județene și SMURD.',
+      '• <strong>O.G. nr. 21/2004</strong> — Sistemul Național de Management al Situațiilor de Urgență.',
+      '• <strong>H.G. nr. 123/2002</strong> — Normele metodologice de aplicare a Legii 544/2001.',
+      '• <strong>Legea nr. 95/2006</strong>, Titlul IV — organizarea asistenței medicale de urgență.',
+    ],
+    alert: { type: 'success', icon: '✅', text: 'Aprobare: Solicitarea vizează date statistice operaționale de interes public, în competența directă a DSU. Informațiile sunt comunicabile conform art. 5 din Legea 544/2001.' },
+    draft: `Stimate Domnule Marinescu,
+
+Referitor la solicitarea dumneavoastră înregistrată cu nr. [NR_ÎNREG] din [DATA], formulată în temeiul Legii nr. 544/2001 privind liberul acces la informațiile de interes public, vă comunicăm următoarele:
+
+1. TIMPII MEDII DE RĂSPUNS
+Anexat prezentei veți regăsi situația defalcată pe județe a timpilor medii de răspuns ai echipajelor SMURD și ai serviciilor de ambulanță pentru anul 2025, conform datelor centralizate de Direcția Generală Management Urgențe Medicale din cadrul DSU.
+
+2. NUMĂRUL TOTAL DE INTERVENȚII
+Datele privind intervențiile realizate de SMURD în anul 2025, defalcate pe categoriile solicitate, sunt prezentate în Anexa 2.
+
+3. ECHIPAJE OPERAȚIONALE
+Situația echipajelor SMURD operaționale la nivel național, comparativ cu necesarul normativ, este prezentată în Anexa 3.
+
+Temeiul legal: art. 5 alin. (1) și art. 7 alin. (1) din Legea nr. 544/2001; O.U.G. nr. 1/2014; O.G. nr. 21/2004.
+
+Cu stimă,
+[NUME RESPONSABIL]
+Responsabil aplicare Legea 544/2001
+Departamentul pentru Situații de Urgență`
+  },
+
+  cutremur: {
+    text: `Subsemnata Maria Drăgan, reprezentant al Asociației „București Pregătit", formulez prezenta solicitare în baza Legii nr. 544/2001.\n\nVă rog să ne comunicați:\n1. Planul de evacuare a populației din București în cazul producerii unui cutremur major (peste 7 grade Richter), inclusiv rutele de evacuare și locațiile adăposturilor de protecție civilă;\n2. Starea actuală a adăposturilor de protecție civilă din București — câte sunt funcționale, câte sunt dezafectate sau ocupate ilegal;\n3. Ultimul exercițiu de simulare a unui cutremur major la nivelul Capitalei — data, participanții și concluziile.\n\nPrecizăm că aceste informații sunt esențiale pentru programele noastre de pregătire comunitară și educație civică.`,
+    tags: [
+      { text: 'Informație publică', cls: 'approve' },
+      { text: 'Protecție civilă', cls: 'info' },
+      { text: 'Aprobare parțială', cls: 'partial' },
+      { text: 'Posibil clasificat parțial', cls: 'warn' },
+    ],
+    legal: [
+      '• <strong>Art. 5 și art. 12, alin. (1), lit. a) din Legea 544/2001</strong> — comunicare din oficiu, dar cu excepțiile privind securitatea națională.',
+      '• <strong>Legea nr. 481/2004</strong> — protecția civilă (organizarea adăposturilor, planuri de evacuare).',
+      '• <strong>O.G. nr. 21/2004</strong> — Sistemul Național de Management al Situațiilor de Urgență.',
+      '• <strong>H.G. nr. 557/2016</strong> — managementul tipurilor de risc.',
+      '• <strong>Legea nr. 182/2002</strong> — protecția informațiilor clasificate (aplicabilă planurilor detaliate de evacuare).',
+      '• <strong>O.U.G. nr. 57/2019 (Codul administrativ)</strong> — competențele autorităților locale în protecție civilă.',
+    ],
+    alert: { type: 'warning', icon: '⚠️', text: 'Aprobare parțială: Starea adăposturilor și exercițiile de simulare sunt informații publice. Planurile detaliate de evacuare pot conține elemente clasificate conform Legii 182/2002. Se recomandă consultarea ofițerului de securitate.' },
+    draft: `Stimată Doamnă Drăgan,
+
+Referitor la solicitarea dumneavoastră înregistrată cu nr. [NR_ÎNREG] din [DATA], formulată în temeiul Legii nr. 544/2001, vă comunicăm următoarele:
+
+1. PLANURILE DE EVACUARE
+Planurile generale de evacuare a populației în caz de cutremur sunt documente cu caracter parțial clasificat, conform Legii nr. 182/2002 privind protecția informațiilor clasificate. Vă putem comunica: rutele principale de evacuare publicate pe site-ul IGSU/DSU, locațiile publice ale punctelor de adunare și direcțiile generale de deplasare.
+Planurile detaliate de dislocare a forțelor și resurselor conțin informații clasificate și nu pot fi comunicate conform art. 12 alin. (1) lit. a) din Legea 544/2001.
+
+2. STAREA ADĂPOSTURILOR DE PROTECȚIE CIVILĂ
+Conform evidențelor Direcției Generale pentru Protecție Civilă (DGPC) din cadrul DSU, situația adăposturilor din București este prezentată în Anexa 1. Menționăm că gestionarea adăposturilor este o competență partajată cu autoritățile locale (conform Legii nr. 481/2004 și Codului administrativ), iar pentru detalii privind situația juridică a fiecărui adăpost, recomandăm contactarea Primăriei Municipiului București.
+
+3. EXERCIȚII DE SIMULARE
+Ultimul exercițiu de simulare seismică „Seism 2025" a avut loc la data de [DATA], cu participarea [LISTA PARTICIPANȚI]. Raportul de concluzii este disponibil în Anexa 2.
+
+Temeiul legal: art. 5, art. 7 și art. 12 din Legea 544/2001; Legea 481/2004; Legea 182/2002.
+
+Prezenta decizie de comunicare parțială poate fi contestată conform art. 22 din Legea 544/2001, prin reclamație administrativă în termen de 30 de zile.
+
+Cu stimă,
+[NUME RESPONSABIL]
+Responsabil aplicare Legea 544/2001
+Departamentul pentru Situații de Urgență`
+  },
+
+  ucraina: {
+    text: `Subsemnatul Andrei Constantinescu, jurnalist de investigație la [Publicație], formulez prezenta cerere în temeiul Legii nr. 544/2001 privind liberul acces la informațiile de interes public.\n\nSolicit următoarele informații referitoare la implicarea DSU în gestionarea crizei refugiaților din Ucraina:\n\n1. Suma totală cheltuită de DSU și structurile coordonate (IGSU, IGAV) pentru operațiunile legate de criza refugiaților din Ucraina, din februarie 2022 până în prezent, defalcată pe categorii de cheltuieli (logistică, cazare tabere temporare, hrană, transport, asistență medicală);\n2. Lista completă a contractelor încheiate de DSU cu organizații neguvernamentale (ONG-uri) și companii private în contextul crizei ucrainene, incluzând: denumirea contractantului, obiectul contractului, valoarea, procedura de achiziție utilizată;\n3. Numărul de personal DSU/IGSU dislocat la punctele de frontieră și în taberele de refugiați, inclusiv regimul de plată a orelor suplimentare;\n4. Rapoartele de audit intern sau extern efectuate asupra cheltuielilor legate de criza refugiaților;\n5. Corespondența oficială dintre DSU și Grupul de Coordonare Strategică a Asistenței Umanitare (GCSAU) din cadrul Cancelariei Prim-ministrului.\n\nMenționez că aceste informații sunt de interes public major, dat fiind volumul semnificativ al fondurilor publice implicate.`,
+    tags: [
+      { text: 'Interes public major', cls: 'warn' },
+      { text: 'Multi-instituțional', cls: 'info' },
+      { text: 'Achiziții publice', cls: 'info' },
+      { text: 'Posibil clasificat parțial', cls: 'partial' },
+      { text: 'Sensibil politic', cls: 'deny' },
+    ],
+    legal: [
+      '• <strong>Art. 5, alin. (1), lit. a)-i) din Legea 544/2001</strong> — informațiile privind bugetul, achizițiile și activitățile instituției sunt publice.',
+      '• <strong>O.U.G. nr. 96/2024</strong> — privind acordarea de sprijin și asistență umanitară cetățenilor proveniți din zona conflictului armat din Ucraina (înlocuiește OUG 15/2022).',
+      '• <strong>O.U.G. nr. 15/2022</strong> — cadrul inițial privind asistența umanitară pentru refugiații din Ucraina (programul „50/20").',
+      '• <strong>Decizia Consiliului UE 2022/382</strong> — protecția temporară pentru persoanele strămutate din Ucraina.',
+      '• <strong>Legea nr. 98/2016</strong> — privind achizițiile publice (contracte ONG-uri, furnizori).',
+      '• <strong>Legea nr. 500/2002</strong> — finanțele publice (execuție bugetară, fonduri de rezervă).',
+      '• <strong>O.G. nr. 21/2004</strong> — Sistemul Național de Management al Situațiilor de Urgență.',
+      '• <strong>Legea nr. 182/2002</strong> — protecția informațiilor clasificate (posibil aplicabilă corespondenței inter-instituționale).',
+      '• <strong>Art. 12, alin. (1), lit. a)-e) din Legea 544/2001</strong> — excepțiile de la liberul acces (securitate, deliberări, corespondență internă).',
+      '• <strong>Legea nr. 672/2002</strong> — auditul public intern.',
+    ],
+    alert: { type: 'classified', icon: '🚫', text: 'Clasificat parțial: Solicitarea implică legislație complexă multi-strat. Punctele 1-3 sunt în mare parte comunicabile ca informații de interes public. Punctul 4 (audituri) poate fi parțial restricționat. Punctul 5 (corespondență inter-instituțională) este probabil exceptat conform art. 12 alin. (1) lit. b) din Legea 544/2001. Se recomandă avizul conducerii, ofițerului de securitate și al Direcției juridice.' },
+    draft: `Stimate Domnule Constantinescu,
+
+Referitor la solicitarea dumneavoastră înregistrată cu nr. [NR_ÎNREG] din [DATA], formulată în temeiul Legii nr. 544/2001, vă comunicăm următoarele:
+
+1. CHELTUIELI TOTALE — CRIZA REFUGIAȚILOR DIN UCRAINA
+Conform evidențelor financiare ale DSU și ale structurilor coordonate, situația cheltuielilor efectuate pentru operațiunile de asistență umanitară din perioada februarie 2022 – prezent este prezentată în Anexa 1, defalcată pe categoriile solicitate. Cadrul legal aplicabil: O.U.G. nr. 15/2022 (programul „50/20"), ulterior O.U.G. nr. 96/2024, cu finanțare din Fondul de Rezervă Bugetară și fonduri europene.
+Temeiul comunicării: art. 5 alin. (1) din Legea 544/2001; Legea 500/2002.
+
+2. CONTRACTE CU ONG-URI ȘI COMPANII PRIVATE
+Lista contractelor încheiate în contextul crizei ucrainene este prezentată în Anexa 2. Menționăm că informațiile privind achizițiile publice sunt disponibile și în Sistemul Electronic de Achiziții Publice (SEAP/SICAP).
+Temeiul comunicării: art. 5 din Legea 544/2001; Legea 98/2016.
+
+3. PERSONAL DISLOCAT
+Datele agregate privind personalul dislocat la punctele de frontieră și în taberele temporare sunt prezentate în Anexa 3. Informațiile detaliate privind dispoziția exactă a personalului pot conține elemente cu caracter operativ restricționat.
+
+4. RAPOARTE DE AUDIT
+Rapoartele de audit intern finalizate și aprobate sunt documente comunicabile. Rapoartele de audit extern aflate în curs de verificare nu pot fi comunicate conform art. 12 alin. (1) lit. b) din Legea 544/2001 (documente în curs de elaborare). Anexa 4 conține rapoartele finalizate.
+
+5. CORESPONDENȚA CU GCSAU
+Corespondența oficială dintre DSU și Grupul de Coordonare Strategică a Asistenței Umanitare (GCSAU) din cadrul Cancelariei Prim-ministrului constituie document intern de lucru și deliberare inter-instituțională, exceptat de la liberul acces conform art. 12, alin. (1), lit. b) din Legea 544/2001.
+
+Prezenta decizie de comunicare parțială poate fi contestată conform art. 22 din Legea 544/2001, prin reclamație administrativă la conducătorul autorității, în termen de 30 de zile de la comunicare.
+
+Cu stimă,
+[NUME RESPONSABIL]
+Responsabil aplicare Legea 544/2001
+Departamentul pentru Situații de Urgență`
+  },
+
+  detentie: {
+    text: `Subsemnata Elena Voicu, avocat, membru al Baroului București, formulez prezenta cerere în temeiul Legii nr. 544/2001.\n\nSolicit următoarele informații:\n1. Condițiile de detenție din centrele de reținere și arest preventiv administrate de Poliția Română, inclusiv gradul de ocupare, condițiile de igienă și accesul la asistență medicală;\n2. Numărul de plângeri formulate de persoane reținute/arestate privind condițiile de detenție în anul 2025;\n3. Măsurile luate de autorități ca urmare a hotărârilor CEDO privind condițiile de detenție din România.\n\nSolicit comunicarea informațiilor în termen de 10 zile lucrătoare.`,
+    tags: [
+      { text: 'Nu este competența DSU', cls: 'redirect' },
+      { text: 'Redirecționare necesară', cls: 'redirect' },
+      { text: 'Poliția Română / ANP', cls: 'info' },
+    ],
+    legal: [
+      '• <strong>Art. 7, alin. (4) din Legea 544/2001</strong> — în cazul în care solicitarea nu se încadrează în competența autorității, aceasta se redirecționează în termen de 5 zile.',
+      '• <strong>O.U.G. nr. 30/2007</strong> — organizarea MAI: DSU nu are atribuții privind centrele de reținere.',
+      '• <strong>Legea nr. 218/2002</strong> — organizarea și funcționarea Poliției Române (competența IGPR).',
+      '• <strong>Legea nr. 254/2013</strong> — executarea pedepselor (competența Administrației Naționale a Penitenciarelor — ANP).',
+      '• <strong>H.G. nr. 123/2002</strong> — Normele metodologice: obligația redirecționării în 5 zile.',
+    ],
+    alert: { type: 'redirect-bar', icon: '↪️', text: 'Redirecționare: Solicitarea NU se încadrează în competența DSU. Centrele de reținere sunt administrate de Poliția Română (IGPR) și Administrația Națională a Penitenciarelor (ANP). Conform art. 7 alin. (4) din Legea 544/2001, solicitarea trebuie redirecționată în maxim 5 zile lucrătoare.' },
+    draft: `Stimată Doamnă Avocat Voicu,
+
+Referitor la solicitarea dumneavoastră înregistrată cu nr. [NR_ÎNREG] din [DATA], formulată în temeiul Legii nr. 544/2001 privind liberul acces la informațiile de interes public, vă comunicăm următoarele:
+
+Departamentul pentru Situații de Urgență (DSU) este o structură operațională a Ministerului Afacerilor Interne cu atribuții de coordonare a activităților de prevenire și gestionare a situațiilor de urgență, asistență medicală de urgență (SMURD/ambulanțe) și protecție civilă, conform O.U.G. nr. 1/2014 și O.G. nr. 21/2004.
+
+Informațiile solicitate privind condițiile din centrele de reținere și arest preventiv NU se încadrează în competența DSU, ci în competența următoarelor instituții:
+
+→ INSPECTORATUL GENERAL AL POLIȚIEI ROMÂNE (IGPR)
+  Adresa: Str. Mihai Vodă nr. 4-6, Sector 5, București
+  Email: relatii.publice@politiaromana.ro
+  (pentru centrele de reținere din cadrul unităților de poliție)
+
+→ ADMINISTRAȚIA NAȚIONALĂ A PENITENCIARELOR (ANP)
+  Adresa: Str. Maria Ghiculeasa nr. 47, Sector 2, București
+  Email: anp@anp.gov.ro
+  (pentru penitenciare și centre de arest preventiv)
+
+Conform art. 7 alin. (4) din Legea 544/2001, solicitarea dumneavoastră a fost redirecționată către instituțiile competente menționate mai sus, în termenul legal de 5 zile lucrătoare de la înregistrare.
+
+Cu stimă,
+[NUME RESPONSABIL]
+Responsabil aplicare Legea 544/2001
+Departamentul pentru Situații de Urgență`
+  }
+};
+
+// Extended legislation DB
+const legislationDB = [
+  { id:'L544-2001', title:'Legea nr. 544/2001', subtitle:'privind liberul acces la informațiile de interes public', type:'Lege', year:2001, keywords:['informații publice','acces liber','transparență','solicitare','răspuns','refuz','termen','redirecționare'] },
+  { id:'HG123-2002', title:'H.G. nr. 123/2002', subtitle:'Norme metodologice de aplicare a Legii 544/2001', type:'HG', year:2002, keywords:['norme metodologice','544','formulare','model','redirecționare'] },
+  { id:'OG21-2004', title:'O.G. nr. 21/2004', subtitle:'privind Sistemul Național de Management al Situațiilor de Urgență', type:'OG', year:2004, keywords:['situații de urgență','management','sistem național','comitet','CNSU'] },
+  { id:'OUG1-2014', title:'O.U.G. nr. 1/2014', subtitle:'privind unele măsuri în domeniul managementului situațiilor de urgență', type:'OUG', year:2014, keywords:['DSU','SMURD','ambulanță','coordonare','urgențe medicale','IGSU'] },
+  { id:'L481-2004', title:'Legea nr. 481/2004', subtitle:'privind protecția civilă', type:'Lege', year:2004, keywords:['protecție civilă','adăposturi','evacuare','cutremur','dezastru'] },
+  { id:'HG557-2016', title:'H.G. nr. 557/2016', subtitle:'privind managementul tipurilor de risc', type:'HG', year:2016, keywords:['risc','cutremur','inundație','tip de risc','management risc'] },
+  { id:'L95-2006', title:'Legea nr. 95/2006', subtitle:'privind reforma în domeniul sănătății (Titlul IV - Asistența medicală de urgență)', type:'Lege', year:2006, keywords:['sănătate','urgență','SMURD','ambulanță','UPU','CPU'] },
+  { id:'OUG96-2024', title:'O.U.G. nr. 96/2024', subtitle:'privind acordarea de sprijin și asistență umanitară cetățenilor proveniți din Ucraina', type:'OUG', year:2024, keywords:['Ucraina','refugiați','asistență umanitară','cazare','protecție temporară','tabere'] },
+  { id:'OUG15-2022', title:'O.U.G. nr. 15/2022', subtitle:'privind acordarea de sprijin pentru refugiații din Ucraina (programul 50/20)', type:'OUG', year:2022, keywords:['Ucraina','50/20','cazare','hrană','refugiați','sprijin'] },
+  { id:'L98-2016', title:'Legea nr. 98/2016', subtitle:'privind achizițiile publice', type:'Lege', year:2016, keywords:['achiziții','licitație','contracte','furnizori','SEAP','ONG'] },
+  { id:'L500-2002', title:'Legea nr. 500/2002', subtitle:'privind finanțele publice', type:'Lege', year:2002, keywords:['buget','finanțe','cheltuieli','execuție bugetară','fond de rezervă'] },
+  { id:'L182-2002', title:'Legea nr. 182/2002', subtitle:'privind protecția informațiilor clasificate', type:'Lege', year:2002, keywords:['clasificat','secret','securitate națională','informații clasificate'] },
+  { id:'L672-2002', title:'Legea nr. 672/2002', subtitle:'privind auditul public intern', type:'Lege', year:2002, keywords:['audit','intern','control','verificare','raport audit'] },
+  { id:'OUG57-2019', title:'O.U.G. nr. 57/2019', subtitle:'privind Codul administrativ', type:'OUG', year:2019, keywords:['cod administrativ','funcționar','administrație','organizare','competențe','autorități locale'] },
+  { id:'L218-2002', title:'Legea nr. 218/2002', subtitle:'privind organizarea și funcționarea Poliției Române', type:'Lege', year:2002, keywords:['poliție','IGPR','reținere','ordine publică'] },
+  { id:'L254-2013', title:'Legea nr. 254/2013', subtitle:'privind executarea pedepselor și a măsurilor privative de libertate', type:'Lege', year:2013, keywords:['penitenciar','detenție','ANP','arest','condiții detenție'] },
+  { id:'OUG30-2007', title:'O.U.G. nr. 30/2007', subtitle:'privind organizarea și funcționarea MAI', type:'OUG', year:2007, keywords:['MAI','organizare','DSU','poliție','competențe','minister'] },
+  { id:'L190-2018', title:'Legea nr. 190/2018', subtitle:'privind măsuri de aplicare a GDPR (Regulamentul UE 2016/679)', type:'Lege', year:2018, keywords:['GDPR','date personale','protecție','prelucrare'] },
+];
+
+function selectScenario(el, type) {
+  document.querySelectorAll('.scenario-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('requestText').value = SCENARIOS[type]?.text || '';
+}
+
+function searchLegislation() {
+  const title = document.getElementById('searchTitle').value.toLowerCase();
+  const number = document.getElementById('searchNumber').value;
+  const year = document.getElementById('searchYear').value;
+  let results = legislationDB.filter(item => {
+    let match = true;
+    if (title) match = match && (item.title.toLowerCase().includes(title) || item.subtitle.toLowerCase().includes(title) || item.keywords.some(k => k.includes(title)));
+    if (number) match = match && item.title.includes(number);
+    if (year) match = match && item.year.toString() === year;
+    return match;
+  });
+  if (!title && !number && !year) results = legislationDB.slice(0, 6);
+  renderSearchResults(results);
+}
+
+function nlSearchLegislation() {
+  const query = document.getElementById('nlSearch').value.toLowerCase();
+  const results = legislationDB.filter(item => {
+    const allText = (item.title + ' ' + item.subtitle + ' ' + item.keywords.join(' ')).toLowerCase();
+    const words = query.split(/\s+/).filter(w => w.length > 2);
+    return words.some(w => allText.includes(w));
+  });
+  renderSearchResults(results);
+}
+
+function renderSearchResults(results) {
+  const container = document.getElementById('searchResults');
+  if (results.length === 0) {
+    container.innerHTML = `<div style="padding:16px;text-align:center;color:var(--text-dim);font-size:0.82rem;">Niciun rezultat. <a href="https://legislatie.just.ro/" target="_blank" style="color:var(--accent);">Căutați pe Portalul Legislativ →</a></div>`;
+    return;
+  }
+  container.innerHTML = results.map(r => `
+    <div class="search-result-item" onclick="this.classList.toggle('selected')">
+      <h5>${r.title}</h5><p>${r.subtitle}</p>
+      <span class="search-result-tag">${r.type} · ${r.year}</span>
+    </div>`).join('');
+}
+
+function runAnalysis() {
+  const text = document.getElementById('requestText').value;
+  if (!text.trim()) return;
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('analysisResults').classList.add('hidden');
+  document.getElementById('analysisLoading').classList.remove('hidden');
+
+  // Detect scenario
+  const lower = text.toLowerCase();
+  let scenarioKey = null;
+  if (lower.includes('smurd') || lower.includes('timpii medii') || lower.includes('echipaje')) scenarioKey = 'smurd';
+  else if (lower.includes('evacuare') || lower.includes('cutremur') || lower.includes('adăposturi') || lower.includes('protecție civilă')) scenarioKey = 'cutremur';
+  else if (lower.includes('ucraina') || lower.includes('refugiați') || lower.includes('gcsau') || lower.includes('umanitar')) scenarioKey = 'ucraina';
+  else if (lower.includes('detenție') || lower.includes('reținere') || lower.includes('arest') || lower.includes('poliție')) scenarioKey = 'detentie';
+
+  setTimeout(() => {
+    document.getElementById('analysisLoading').classList.add('hidden');
+    document.getElementById('analysisResults').classList.remove('hidden');
+    if (scenarioKey && SCENARIOS[scenarioKey]) {
+      renderAnalysis(SCENARIOS[scenarioKey]);
+    } else {
+      renderGenericAnalysis();
+    }
+  }, 2400);
+}
+
+function renderAnalysis(s) {
+  document.getElementById('classificationTags').innerHTML = s.tags.map(t => `<span class="a-tag ${t.cls}">${t.text}</span>`).join('');
+  document.getElementById('legalBasis').innerHTML = s.legal.join('<br>');
+  const ab = document.getElementById('alertBar');
+  ab.classList.remove('hidden','classified','success','warning','redirect-bar');
+  ab.classList.add(s.alert.type);
+  document.getElementById('alertIcon').textContent = s.alert.icon;
+  document.getElementById('alertText').textContent = s.alert.text;
+  document.getElementById('draftText').value = s.draft;
+}
+
+function renderGenericAnalysis() {
+  document.getElementById('classificationTags').innerHTML = '<span class="a-tag info">Analiză necesară</span>';
+  document.getElementById('legalBasis').innerHTML = '• <strong>Art. 7 din Legea 544/2001</strong> — termenul de răspuns: 10 zile lucrătoare.';
+  document.getElementById('alertBar').classList.add('hidden');
+  document.getElementById('draftText').value = 'Stimate/Stimată [SOLICITANT],\n\nReferitor la solicitarea dumneavoastră...\n\n[COMPLETAȚI RĂSPUNSUL]\n\nCu stimă,\n[NUME RESPONSABIL]\nDepartamentul pentru Situații de Urgență';
+}
+
+function copyDraft() {
+  navigator.clipboard.writeText(document.getElementById('draftText').value).then(() => {
+    const btn = event.target; btn.textContent = 'Copiat ✓'; setTimeout(() => btn.textContent = 'Copiază draft', 2000);
+  });
+}
+function regenerateDraft() { runAnalysis(); }
+
+window.addEventListener('DOMContentLoaded', () => searchLegislation());
+</script>
+</body>
+</html>
